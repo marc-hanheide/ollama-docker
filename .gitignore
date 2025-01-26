@@ -5,3 +5,5 @@ ollama/
 *.gguf
 *.ggml
 .idea/
+anythingllm.env
+anythingllm-data/

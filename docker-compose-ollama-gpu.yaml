@@ -1,4 +1,3 @@
-version: '3.8'
 
 services:
   app:
@@ -21,7 +20,7 @@ services:
     pull_policy: always
     tty: true
     restart: unless-stopped
-    image: ollama/ollama:latest
+    image: ollama/ollama:0.5.7
     ports:
       - 7869:11434
     environment:
@@ -68,3 +67,36 @@ services:
       - ollama
 
 
+  anythingllm:
+    image: mintplexlabs/anythingllm
+    container_name: anythingllm
+    environment:
+      - STORAGE_DIR=/app/server/storage
+      - LLM_PROVIDER=ollama
+      - OLLAMA_BASE_PATH=http://ollama:11434
+      - EMBEDDING_ENGINE=ollama
+      - EMBEDDING_BASE_PATH=http://ollama:11434
+      - VECTOR_DB=lancedb
+    env_file:
+      - anythingllm.env
+    cap_add:
+      - SYS_ADMIN
+    volumes:
+      - ./anythingllm-data/storage:/app/server/storage
+    restart: unless-stopped
+    links:
+      - ollama
+
+  zrok_anythingllm:
+    image: openziti/zrok
+    restart: unless-stopped
+    user: "${USER_ID}" # expects USER_ID=`id -u` e.g. in .bashrc
+    volumes:
+      - ${HOME}/.zrok:/.zrok
+    environment:
+      HOME: "/"
+      PFXLOG_NO_JSON: "true"
+    command: share reserved "anythingllm" --headless --override-endpoint http://anythingllm:3001
+    # This command requires the Ziti Edge Controller to be running and the share be reserved on the host before: `zrok reserve public http://vista:5000 --basic-auth lcas:lincoln -n vista`
+    links:
+      - anythingllm
