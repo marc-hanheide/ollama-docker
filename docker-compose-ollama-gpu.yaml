@@ -23,6 +23,10 @@ services:
     image: ollama/ollama:0.5.7
     ports:
       - 7869:11434
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
     environment:
       - OLLAMA_KEEP_ALIVE=24h
     deploy:
@@ -68,14 +72,27 @@ services:
 
 
   anythingllm:
-    image: mintplexlabs/anythingllm
+    image: mintplexlabs/anythingllm@sha256:a4a0ca494394640c294cbaf9b3dc39f8aca783adcc82a5657d640161a3b7faf3
     container_name: anythingllm
     environment:
       - STORAGE_DIR=/app/server/storage
       - LLM_PROVIDER=ollama
       - OLLAMA_BASE_PATH=http://ollama:11434
+      - OLLAMA_MODEL_PREF=llama3:8b
+      - OLLAMA_MODEL_TOKEN_LIMIT=8192
+      - OLLAMA_PERFORMANCE_MODE=maximum
+
       - EMBEDDING_ENGINE=ollama
       - EMBEDDING_BASE_PATH=http://ollama:11434
+      - EMBEDDING_MODEL_PREF=nomic-embed-text:latest
+      - EMBEDDING_MODEL_MAX_CHUNK_LENGTH=512
+
+      - DISABLE_TELEMETRY=true
+
+      # - AGENT_GSE_CTX= see .anythingllm.env
+      # - AGENT_GSE_KEY= see .anythingllm.env
+      # - JWT_SECRET= see .anythingllm.env
+
       - VECTOR_DB=lancedb
     env_file:
       - anythingllm.env
