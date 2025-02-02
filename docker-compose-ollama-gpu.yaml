@@ -119,3 +119,30 @@ services:
     # This command requires the Ziti Edge Controller to be running and the share be reserved on the host before: `zrok reserve public http://vista:5000 --basic-auth lcas:lincoln -n vista`
     links:
       - anythingllm
+
+  mcp_file_system:
+    build:
+      context: ./mcp-proxy
+      dockerfile: ./Dockerfile
+    #tty: true
+    restart: unless-stopped
+    command: 
+      - mcp-proxy
+      - "--sse-host"
+      - "0.0.0.0"
+      - "--sse-port"
+      - "8888"
+      - -e
+      - PATH
+      - "/app/.venv/bin:/usr/local/bin:/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+      - --
+      - /usr/local/bin/npx
+      - -y
+      - "@modelcontextprotocol/server-filesystem"
+      - /filesystem
+    #command: "mcp-proxy --sse-port=8080 -- uvx mcp-server-fetch --user-agent=YourUserAgent"
+    #command: "mcp-proxy  --sse-port 8888 -- /usr/local/bin/npx -y @modelcontextprotocol/server-filesystem /filesystem"
+    #command: "mcp-proxy  --sse-port 8888 /usr/local/bin/npx -y @modelcontextprotocol/server-filesystem /filesystem"
+    volumes:
+      - ./mcp-proxy/data:/filesystem
+
